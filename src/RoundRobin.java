@@ -28,7 +28,7 @@ public class RoundRobin implements SchedulerPolicy {
             burstTime = runningProcess.getBurst();
             context.exitQueue.add(runningProcess);
         } else if (burstTime > quantum) {
-            runningProcess.setBurst(burstTime - quantum);
+            runningProcess = new Process(runningProcess, burstTime - quantum);
             burstTime = quantum;
             context.readyQueue.add(runningProcess);
         } else {

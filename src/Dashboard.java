@@ -1,9 +1,12 @@
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ListDataListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.LinkedList;
+import java.util.Vector;
 
 public class Dashboard {
     private JPanel contentPane;
@@ -20,6 +23,8 @@ public class Dashboard {
     private JCheckBox autorunButton;
     private JLabel currentSpeedLabel;
     private JButton flushButton;
+    private JButton loadButton;
+    private JButton dumpButton;
 
     private ActionListener startAction, stopAction;
 
@@ -35,7 +40,8 @@ public class Dashboard {
     private int targetStep;
     private int speed;
 
-    private Burst lastBurst
+    private Burst lastBurst;
+    private Vector<String> stepList;
 
     public static void main(String[] args) {
         try {
@@ -69,6 +75,8 @@ public class Dashboard {
         clockTimer = new Timer(0, schedulerUpdate);
 
         processModelList = scheduler.getProcessQueue();
+
+        stepList = new Vector<String>();
 
         //Graphics elements
         policySelector.setModel(new DefaultComboBoxModel<String>(scheduler.getAvailablePolicies()));
@@ -109,6 +117,22 @@ public class Dashboard {
             @Override
             public void actionPerformed(ActionEvent e) {
                 scheduler.flushProcessQueue();
+                processTable.updateUI();
+            }
+        });
+
+        dumpButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                scheduler.dumpProcessState();
+            }
+        });
+
+        loadButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                scheduler.loadProcessState();
+                processTable.updateUI();
             }
         });
 
@@ -116,9 +140,12 @@ public class Dashboard {
             @Override
             public void stateChanged(ChangeEvent e) {
                 speed = speedSlider.getValue();
+                clockTimer.setDelay(speed);
                 currentSpeedLabel.setText(String.valueOf(speed));
             }
         });
+
+        ganttChart.setListData(stepList);
 
         ProcessTableModel ptmodel = new ProcessTableModel(processModelList);
         processTable.setModel(ptmodel);
@@ -134,7 +161,6 @@ public class Dashboard {
         scheduler.setPolicy(policySelector.getSelectedIndex());
         policySelector.setEnabled(false);
 
-        speedSlider.setEnabled(false);
         speed = speedSlider.getValue();
         clockTimer.setDelay(speed);
 
@@ -144,9 +170,12 @@ public class Dashboard {
         startButton.setText("Stop");
         startButton.addActionListener(stopAction);
 
+        loadButton.setEnabled(false);
+
         stepCounterLabel.setText("0");
 
-        ganttChart.setListData(new Object[0]);   //Clean Gantt chart
+        stepList.clear();
+        ganttChart.updateUI();
 
         if(autorunEnabled) {
             clockTimer.start();
@@ -158,13 +187,14 @@ public class Dashboard {
     public void stop() {
         policySelector.setEnabled(true);
         timesliceSelector.setEnabled(true);
-        speedSlider.setEnabled(true);
 
         stepButton.setEnabled(false);
 
         startButton.removeActionListener(stopAction);
         startButton.setText("Start");
         startButton.addActionListener(startAction);
+
+        loadButton.setEnabled(true);
 
         //nextCSTimer.stop();
         clockTimer.stop();
@@ -208,9 +238,10 @@ public class Dashboard {
     }
 
     public void stepForward() {
+        stepList.add(lastBurst.getProcessName() + " " + step);
+
         step += 1;
         stepCounterLabel.setText(String.valueOf(step));
-
 
         ganttChart.updateUI();
     }

@@ -2,14 +2,16 @@ public class Burst {
 
     private int process_id;
     private int time;
+    private String process_name;
 
-    public Burst(int process_id, int time) {
+    public Burst(int process_id, int time, String process_name) {
         this.process_id = process_id;
         this.time = time;
     }
 
     public Burst(Process p, int time) {
         this.process_id = p.getId();
+        this.process_name = p.getName();
         this.time = time;
     }
 
@@ -19,6 +21,10 @@ public class Burst {
 
     public int getTime() {
         return this.time;
+    }
+
+    public String getProcessName() {
+        return this.process_name;
     }
 
     public String toString() {

@@ -10,6 +10,7 @@ public class Scheduler {    //high level scheduler
     int timeslice;
     Queue<Process> readyQueue;
     Queue<Process> exitQueue;
+    Queue<Process> processDump;
 
     private String[] availablePolicies = {"First come first served", "Round robin"};
 
@@ -60,6 +61,17 @@ public class Scheduler {    //high level scheduler
 
     public LinkedList<Process> getProcessQueue() {
         return (LinkedList<Process>) readyQueue;
+    }
+
+    public void dumpProcessState() {
+        processDump = new LinkedList<Process>(readyQueue);
+    }
+
+    public void loadProcessState() {
+        flushProcessQueue();
+        if(processDump != null) {
+            readyQueue.addAll(processDump);
+        }
     }
 
 }

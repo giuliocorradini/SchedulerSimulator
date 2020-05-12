@@ -17,6 +17,12 @@ public class Process {
         }
     }
 
+    public Process(Process p, int burst) {
+        this.name = p.name;
+        this.id = p.id;
+        this.burst = burst;
+    }
+
     /*public SchedulingState getState() {
         return state;
     }
@@ -35,9 +41,5 @@ public class Process {
 
     public String getName() {
         return name;
-    }
-
-    public void setBurst(int burst) {
-        this.burst = burst;
     }
 }

@@ -27,9 +27,9 @@ public class ProcessTableModel extends AbstractTableModel {
         Process p = processList.get(row);
         switch(col) {
             case 0:
-                return p.getName();
-            case 1:
                 return p.getId();
+            case 1:
+                return p.getName();
             case 2:
                 return p.getBurst();
         }
