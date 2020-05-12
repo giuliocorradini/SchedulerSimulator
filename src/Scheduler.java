@@ -62,14 +62,4 @@ public class Scheduler {    //high level scheduler
         return (LinkedList<Process>) readyQueue;
     }
 
-    public static void main(String args[]) {
-        Scheduler hls = new Scheduler();
-
-        Burst runningProcess;
-
-        do {
-            runningProcess = hls.nextBurst();
-            System.out.println(runningProcess);
-        } while (runningProcess != null);
-    }
 }

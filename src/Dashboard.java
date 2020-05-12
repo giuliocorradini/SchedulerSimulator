@@ -26,7 +26,7 @@ public class Dashboard {
     //Logic
     private Scheduler scheduler;
     private boolean autorunEnabled;
-    private Timer nextCSTimer;
+    private boolean running;
     private Timer clockTimer;
 
     private LinkedList<Process> processModelList;
@@ -34,6 +34,8 @@ public class Dashboard {
     private int step;
     private int targetStep;
     private int speed;
+
+    private Burst lastBurst
 
     public static void main(String[] args) {
         try {
@@ -61,18 +63,10 @@ public class Dashboard {
                 }
             }
         };
-        nextCSTimer = new Timer(0, schedulerUpdate);
-        nextCSTimer.setRepeats(false);
 
         stepButton.addActionListener(schedulerUpdate);
 
-        ActionListener chartUpdate = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                stepForward();
-            }
-        };
-        clockTimer = new Timer(0, chartUpdate);
+        clockTimer = new Timer(0, schedulerUpdate);
 
         processModelList = scheduler.getProcessQueue();
 
@@ -155,8 +149,10 @@ public class Dashboard {
         ganttChart.setListData(new Object[0]);   //Clean Gantt chart
 
         if(autorunEnabled) {
-            nextCSTimer.start();
+            clockTimer.start();
         }
+
+        running = true;
     }
 
     public void stop() {
@@ -170,21 +166,16 @@ public class Dashboard {
         startButton.setText("Start");
         startButton.addActionListener(startAction);
 
-        nextCSTimer.stop();
+        //nextCSTimer.stop();
         clockTimer.stop();
+        running = false;
     }
 
     public void nextContextSwitch() {   //Queries for new context switch
-        Burst lastBurst = scheduler.nextBurst();
+        lastBurst = scheduler.nextBurst();
         if(lastBurst != null) {
             targetStep += lastBurst.getTime();
-            if(autorunEnabled) {    //Sets delay for new query
-                nextCSTimer.setDelay(speed * lastBurst.getTime());
-                nextCSTimer.start();
-                clockTimer.start();
-            } else {
-                stepForward();
-            }
+            stepForward();
         } else {
             stop();
         }
@@ -193,7 +184,14 @@ public class Dashboard {
 
     public void setAutorun() {
         autorunEnabled = autorunButton.isSelected();
-        statusLabel.setText(autorunEnabled ? "running" : "not running");
+        if(running) {
+            if(autorunEnabled) {
+                clockTimer.start();
+            } else {
+                clockTimer.stop();
+            }
+        }
+        statusLabel.setText(autorunEnabled ? "enabled" : "disabled");
     }
 
     public void addProcess() {
@@ -211,11 +209,10 @@ public class Dashboard {
 
     public void stepForward() {
         step += 1;
-        if(step == targetStep) {
-            clockTimer.stop();
-        }
         stepCounterLabel.setText(String.valueOf(step));
-        //Update chart
+
+
+        ganttChart.updateUI();
     }
 
 }
