@@ -3,10 +3,10 @@ public class RoundRobin implements SchedulerPolicy {
     private Scheduler context;
     private int quantum;
 
-    public RoundRobin(Scheduler context, int quantum) {
+    public RoundRobin(Scheduler context) {
         this.context = context;
         if(quantum > 0) {
-            this.quantum = quantum;
+            this.quantum = context.timeslice;
         } else {
             throw new RuntimeException("Quantum value must be a positive non-zero integer.");
         }

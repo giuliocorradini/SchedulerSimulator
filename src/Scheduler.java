@@ -5,16 +5,17 @@ import java.util.Timer;
 public class Scheduler {    //high level scheduler
 
     private SchedulerPolicy lls; //low level scheduler
+
+    //Context
+    int timeslice;
     Queue<Process> readyQueue;
-    //public Queue<Process> blockedQueue;
     Queue<Process> exitQueue;
 
     private String[] availablePolicies = {"First come first served", "Round robin"};
 
-    public Scheduler() {    //need creational pattern, maybe AbstractFactory?
+    public Scheduler() {
         readyQueue = new LinkedList<Process>();
         exitQueue = new LinkedList<Process>();
-        lls = new RoundRobin(this, 2);
     }
 
     public String[] getAvailablePolicies() {
@@ -22,7 +23,15 @@ public class Scheduler {    //high level scheduler
     }
 
     public void setPolicy(int policy) {
-        //AbstractFactory?
+        switch(policy) {
+            default:
+            case 0:
+                lls = new FirstComeFirstServed(this);
+                break;
+            case 1:
+                lls = new RoundRobin(this);
+                break;
+        }
     }
 
     public void addProcess(Process p) {
@@ -42,7 +51,7 @@ public class Scheduler {    //high level scheduler
     }
 
     public void setTimeslice(int ts) {
-        lls.setTimeslice(ts);
+        timeslice = ts;
     }
 
     public void flushProcessQueue() {

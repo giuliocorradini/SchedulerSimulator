@@ -4,5 +4,4 @@
  */
 public interface SchedulerPolicy {
     public Burst dispatch();
-    void setTimeslice(Integer ts);
 }
