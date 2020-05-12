@@ -31,7 +31,8 @@ public class Dashboard {
 
     private LinkedList<Process> processModelList;
 
-    private int step = 0;
+    private int step;
+    private int targetStep;
     private int speed;
 
     public static void main(String[] args) {
@@ -49,12 +50,15 @@ public class Dashboard {
 
     public Dashboard() {
         scheduler = new Scheduler();
-        autorunEnabled = true;
 
         ActionListener schedulerUpdate = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                schedulerStep();
+                if(step == targetStep) {
+                    nextContextSwitch();
+                } else {
+                    stepForward();
+                }
             }
         };
         nextCSTimer = new Timer(0, schedulerUpdate);
@@ -65,7 +69,7 @@ public class Dashboard {
         ActionListener chartUpdate = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                chartUpdate();
+                stepForward();
             }
         };
         clockTimer = new Timer(0, chartUpdate);
@@ -127,9 +131,18 @@ public class Dashboard {
     }
 
     public void start() {
-        policySelector.setEnabled(false);
+        step = 0;
+        targetStep = 0;
+
+        scheduler.setTimeslice((Integer)timesliceSelector.getValue());
         timesliceSelector.setEnabled(false);
+
+        scheduler.setPolicy(policySelector.getSelectedIndex());
+        policySelector.setEnabled(false);
+
         speedSlider.setEnabled(false);
+        speed = speedSlider.getValue();
+        clockTimer.setDelay(speed);
 
         stepButton.setEnabled(true);
 
@@ -139,17 +152,11 @@ public class Dashboard {
 
         stepCounterLabel.setText("0");
 
-        scheduler.setPolicy(policySelector.getSelectedIndex());
-
         ganttChart.setListData(new Object[0]);   //Clean Gantt chart
-
-        clockTimer.setDelay(speedSlider.getValue());
 
         if(autorunEnabled) {
             nextCSTimer.start();
         }
-
-        scheduler.setTimeslice((Integer)timesliceSelector.getValue());
     }
 
     public void stop() {
@@ -167,14 +174,16 @@ public class Dashboard {
         clockTimer.stop();
     }
 
-    public void schedulerStep() {
+    public void nextContextSwitch() {   //Queries for new context switch
         Burst lastBurst = scheduler.nextBurst();
         if(lastBurst != null) {
-            step += lastBurst.getTime();
-            stepCounterLabel.setText(String.valueOf(step));
-            if(autorunEnabled) {
+            targetStep += lastBurst.getTime();
+            if(autorunEnabled) {    //Sets delay for new query
                 nextCSTimer.setDelay(speed * lastBurst.getTime());
                 nextCSTimer.start();
+                clockTimer.start();
+            } else {
+                stepForward();
             }
         } else {
             stop();
@@ -200,8 +209,13 @@ public class Dashboard {
 
     }
 
-    public void chartUpdate() {
-
+    public void stepForward() {
+        step += 1;
+        if(step == targetStep) {
+            clockTimer.stop();
+        }
+        stepCounterLabel.setText(String.valueOf(step));
+        //Update chart
     }
 
 }

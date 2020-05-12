@@ -43,6 +43,8 @@ public class ProcessDialog extends JDialog {
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
+        burstTimeField.setModel(new SpinnerNumberModel(1, 1, null, 1));
+
         valid = false;
         pack();
     }

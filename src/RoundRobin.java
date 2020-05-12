@@ -5,9 +5,8 @@ public class RoundRobin implements SchedulerPolicy {
 
     public RoundRobin(Scheduler context) {
         this.context = context;
-        if(quantum > 0) {
-            this.quantum = context.timeslice;
-        } else {
+        this.quantum = context.timeslice;
+        if(quantum < 0) {
             throw new RuntimeException("Quantum value must be a positive non-zero integer.");
         }
     }
